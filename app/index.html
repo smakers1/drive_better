@@ -15,23 +15,76 @@
         
         <link rel="stylesheet" href="styles/main.css">
         <script src="scripts/vendor/modernizr.min.js"></script>
+        <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDntem2bxHYYoLnuDZSHXYMHV3ZYYmL9iI&sensor=true"></script>
+        <script type="text/javascript" src="scripts/JSONparser.js"></script>
+        <script type="text/javascript" src="scripts/GMapsAPIHandlerTransit.js"></script> 
+        <script type="text/javascript" src="scripts/GMapsAPIHandlerWalking.js"></script> 
     </head>
     <body>
-    <div class="container" style="margin-top:50px">
-        <div class="hero-unit">
-            <h1>Wotcha!</h1>
-            <p>You now have</p>
-            <ul>
-                <li>HTML5 Boilerplate</li>
-                <li>Twitter Bootstrap</li>
-                <li>Twitter Bootstrap plugins</li>
-                <li>RequireJS</li>
-                <li>Support for ES6 Modules</li>
+       <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" align="center" href="#">Drive Smart</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Previous Trip</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Historical</a></li>
             </ul>
-            <p>installed.</p>
-            <h3>Enjoy coding! - Yeoman</h3>
+          </div><!--/.nav-collapse -->
         </div>
+      </div>
     </div>
+
+    <div class="container" align="center">
+
+    </div> <!-- /container -->
+<div class="accordion" id="accordion2">
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne" align= "center">
+        <i class="icon-road"></i> Driving your Car
+      </a>
+    </div>
+    <div id="collapseOne" class="accordion-body collapse in">
+      <div class="accordion-inner">
+        <div id="driving_cost_output" class="well well-large">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo"align= "center">
+        <i class="icon-screenshot"></i> Taking Public Transit
+      </a>
+    </div>
+    <div id="collapseTwo" class="accordion-body collapse">
+      <div class="accordion-inner">
+        <div id='bus_cost_output' class="well well-large">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree"align= "center">
+        <i class="icon-leaf"></i> If you walked
+      </a>
+    </div>
+    <div id="collapseThree" class="accordion-body collapse">
+      <div class="accordion-inner">
+        <div id='walking_cost_output' class="well well-large">
+        </div> 
+      </div>
+    </div>
+  </div>
+</div>
 
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
@@ -74,3 +127,63 @@
     <!-- endbuild -->
 </body>
 </html>
+          <script type="text/javascript">
+            
+            var tripCost;
+            var distDrove;
+            var time_at_start = 25;//need timeDepart from JSONparser
+            var time_at_off = 35;//need timeArrive from JSONparser
+            var cost = function (){
+              tripCost = openXCFuelConsumption.value*3.78;
+              // document.write("you spent"+" "+"$"+Math.ceil(tripCost)+ " Driving this trip!");
+              tookTime = Math.abs((time_at_start)-(time_at_off));
+              // document.write("  it took you " + tookTime +" minutes ");
+              distDrove = openXCFineOdometer.value;
+              // document.write("and you drove " + distDrove+ " miles");
+              output = "You spent $" + Math.ceil(tripCost) + " driving this trip!";
+              output += "<br/>It took you " + tookTime + " minutes,";
+              output += "<br/>and you drove " + distDrove + " miles";
+              driving_cost_output = $('#driving_cost_output');
+              driving_cost_output.html(output);
+            }
+            cost();
+          </script>
+           <script type="text/javascript">
+            //insert Transit output from GMapsAPIHandlerTransit
+            var lessOrMore;
+            var transitCost = 1;
+            var totalTransitTime= 45;
+            var transitTime = totalTransitTime/*from GMapsAPIHandlerTransit*/-tookTime;
+            var transitTrip= function(){
+                // document.write("The bus would have cost $" + transitCost)
+                if(totalTransitTime>tookTime){
+                  lessOrMore= " more minutes"
+                };
+                if (tookTime>totalTransitTime) {
+                  lessOrMore= " fewer minutes"
+                };
+                // document.write(" and would have taken " + transitTime + lessOrMore +" to arrive at your destination.");
+                var output = "The bus would have cost $" + transitCost;
+                output += " and would have taken " + transitTime + lessOrMore + " to arrive at your destination.";
+                $('#bus_cost_output').html(output);
+                };
+                transitTrip();
+           </script>
+          <script type="text/javascript">
+            var calories;
+            var caloriesPerMile = 113;
+            var totalWalkTime = 240;
+            var walk_time = Math.abs(tookTime-totalWalkTime);//totalWalkTime from GMapsAPIHandlerWalking
+            var walk_distance = 20;
+            var walkingTrip=function(){
+              // document.write("walking would have taken " + walk_time+ " minutes longer than driving");
+
+              calories = walk_distance*caloriesPerMile;
+              // document.write(" but you could have burned " + calories + " calories!");
+              var output = "Walking would have taken " + walk_time + " minutes longer than driving, ";
+              output += "but you would have burned " + calories + " calories.";
+              $('#walking_cost_output').html(output);
+            }
+            walkingTrip();
+          </script>
+
